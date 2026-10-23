@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which AI Fits Your Clinical Work?</title>
+<style>
+:root{--bg:#f3f7fb;--card:#fff;--ink:#14263d;--muted:#4a5d75;--blue:#1f5fa8;--blue-d:#164a85;--line:#d6e2ef;--soft:#e8f0f9;--warn:#7a4b00;--warnbg:#fff6e5}
+*{box-sizing:border-box}
+body{margin:0;font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
+header h1{font-size:1.6rem;margin:0 0 4px;color:var(--blue-d)}
+header p{margin:0 0 20px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(20,38,61,.05)}
+.progress{height:8px;background:var(--soft);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.bar{height:100%;background:var(--blue);width:0;transition:width .25s}
+.step{font-size:.9rem;color:var(--muted);margin-bottom:12px}
+h2{font-size:1.3rem;margin:0 0 6px}
+.hint{color:var(--muted);margin:0 0 16px;font-size:.95rem}
+fieldset{border:0;margin:0;padding:0}
+legend{padding:0}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0;cursor:pointer;background:#fff}
+.opt:hover{border-color:var(--blue)}
+.opt input{margin-top:4px;width:20px;height:20px;accent-color:var(--blue);flex:none}
+.opt:has(input:checked){border-color:var(--blue);background:var(--soft)}
+.opt:focus-within{outline:3px solid #8bb8ea;outline-offset:2px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}.nav .grp{display:flex;gap:10px;flex-wrap:wrap}
+.learn{margin:10px 0 0;padding:10px 14px}.learn p{margin:6px 0}
+button{font:inherit;border-radius:10px;padding:10px 18px;cursor:pointer;border:1.5px solid var(--blue);min-height:44px}
+.primary{background:var(--blue);color:#fff}.primary:hover{background:var(--blue-d)}
+.primary:disabled{background:#9db5d3;border-color:#9db5d3;cursor:not-allowed}
+.secondary{background:#fff;color:var(--blue-d)}
+button:focus-visible,a:focus-visible{outline:3px solid #8bb8ea;outline-offset:2px}
+.pick{border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:10px;padding:16px 18px;margin:16px 0;background:#fff}
+.pick h3{margin:0 0 4px;font-size:1.15rem}
+.rank{display:inline-block;background:var(--blue);color:#fff;border-radius:20px;padding:2px 10px;font-size:.8rem;margin-bottom:6px}
+.pick h4{margin:12px 0 4px;font-size:.95rem;color:var(--blue-d)}
+.pick ul{margin:4px 0;padding-left:20px}
+.task label{display:flex;gap:8px;align-items:flex-start;margin:4px 0}
+.task input{margin-top:5px;width:18px;height:18px;accent-color:var(--blue);flex:none}
+.caution{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.95rem}
+details{border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:14px 0;background:#fff}
+summary{cursor:pointer;font-weight:600;color:var(--blue-d)}
+a{color:var(--blue-d)}
+.note{background:var(--soft);border-radius:10px;padding:12px 14px;margin:14px 0}
+footer{margin-top:28px;font-size:.85rem;color:var(--muted);text-align:center}
+@media (max-width:520px){.card{padding:18px}header h1{font-size:1.35rem}.nav button{flex:1 1 auto}.res .nav,.res .nav .grp{flex-direction:column;width:100%}.res .nav button{width:100%}}
+@media print{details{display:block}details>summary{display:none}details:not([open])>*{display:block}.nav,.noprint{display:none!important}body{background:#fff}.card{border:0;box-shadow:none}details{display:block}details>*{display:block}}
+</style>
+</head>
+<body>
+<main>
+<header id="intro">
+<h1>Which AI Fits Your Clinical Work?</h1>
+<p><span id="qcount">A few</span> short questions. You'll get a short list of ranked suggestions, a plain explanation of how your answers led there, and a small way to test each one this week.</p>
+</header>
+<div class="card" id="app" aria-live="polite"></div>
+<footer>A guide shared by a colleague. General guidance only; check your organization's policies.</footer>
+</main>
+<script>"use strict";
+var Q=[
+{id:"drain",multi:true,title:"What drains the most time or energy in your day, or what do you most want help with?",hint:"Choose all that apply. If two tools fit equally well, the one matching the item you tick first is listed higher.",opts:[
+["notes","Notes and medical records"],["inbox","Inbox and client or patient messages"],["paper","Insurance and paperwork"],["research","Keeping up with research and clinical questions"],["admin","Scheduling and admin"],["writing","Writing talks, letters, or emails"],["video","Editing videos into polished clips and short highlights"]]},
+{id:"role",title:"What kind of clinician are you?",opts:[["vet","Veterinarian"],["md","Physician"],["other","Another type of clinician"]]},
+{id:"setting",title:"Where do you work?",opts:[["system","Hospital or health system"],["group","Corporate or group veterinary practice"],["private","Independent practice"]]},
+{id:"copilot",title:"Does your employer already provide Microsoft Copilot?",opts:[["yes","Yes"],["no","No"],["unsure","Not sure"]]},
+{id:"computer",title:"Which computer do you use most?",opts:[["mac","Mac"],["windows","Windows PC"],["either","Both, or it varies"]]},
+{id:"phi",title:"Will the tool need to handle patient or client information?",opts:[["yes","Yes"],["no","No"],["unsure","Not sure"]]},
+{id:"style",title:"What would help more right now?",opts:[["partner","A thinking partner I can question and check"],["doer","Something that does the work for me"],["both","Both, equally"]]},
+{id:"tech",title:"How much setup and learning are you willing to do?",opts:[["low","Very little. It needs to work almost right away."],["some","A few hours spread over a week"],["more","Whatever it takes if the payoff is real"]]},
+{id:"cite",title:"How important is it that answers show their sources?",opts:[["high","Essential"],["med","Helpful"],["low","Not important"]]}
+];
+var DL={notes:"notes and medical records",inbox:"your inbox and messages",paper:"insurance and paperwork",research:"research and clinical questions",admin:"scheduling and admin",writing:"writing talks, letters, and emails",video:"editing videos into polished clips and highlights"};
+var H="https://";
+var GEN_LIM="It can state wrong things confidently, including made-up references. Ask for sources and check them.";
+var T={
+copilot:{name:"Microsoft 365 Copilot",links:[["Microsoft 365 Copilot",H+"www.microsoft.com/microsoft-365/copilot"]],
+what:"Microsoft's AI assistant, built into Word, Excel, PowerPoint, Outlook, and Teams.",
+learn:{it:"Microsoft's AI assistant for its Office, email, and meeting apps.",how:"You ask in plain language. Microsoft describes it drafting and summarizing in Word, summarizing email threads and drafting replies in Outlook, analyzing data and creating charts in Excel, and recapping meetings with action items in Teams. Which of these you have depends on the version your organization provides.",str:"If your organization provides it, it works inside the apps you already use.",lim:"Like any AI assistant, it can be confidently wrong. Check what it produces.",priv:"Ask your IT team which version you have and what data it is approved for.",exp:"Ask it to summarize a long email thread, then check the summary against the thread."},
+start:["Ask Copilot in Outlook to summarize a long email thread, then check it against the thread.","Have it draft a document or reply in Word or Outlook, and edit it into your own voice.","Try a meeting recap in Teams or a question about a spreadsheet in Excel, if your version includes them."]},
+oe:{name:"OpenEvidence",links:[["OpenEvidence",H+"www.openevidence.com/"]],
+what:"A medical information tool designed to cite its sources, drawn from peer-reviewed literature and guidelines. It is focused on human medicine, and access is aimed at verified U.S. healthcare professionals.",
+learn:{it:"A search and answer tool for clinical questions. Its publisher partners include NEJM, JAMA, NCCN, Nature, and Cochrane.",how:"You type a clinical question. It writes a short answer with numbered citations you can open.",str:"Answers come with sources, so you can check them.",lim:"It summarizes the literature, so the summary can still miss nuance. Its sources are mainly human medicine.",priv:"Ask questions in general terms and leave out identifying details.",exp:"Ask five questions you already know the answers to, then open the citations and see whether they say what the summary claims."},
+start:["Pick five clinical questions from this week whose answers you already know well.","Ask OpenEvidence each one and open at least two of the cited sources.","Note where its answer matched your own and where it did not."]},
+claude:{name:"Claude",links:[["Claude",H+"claude.ai/"]],
+what:"Anthropic's general AI assistant, useful for careful writing and for questions about long documents you paste in.",
+learn:{it:"A general-purpose chat assistant from Anthropic.",how:"You describe what you want in plain language, and it writes a response. You can paste in a document and ask questions about it.",str:"Good at careful writing, summarizing long documents, and working through a problem step by step when asked.",lim:GEN_LIM,priv:"Anthropic offers a HIPAA-ready Enterprise plan with a BAA. Its free and personal plans are not covered.",exp:"Paste a long article or protocol you know well and ask for a one-page summary. Check it against the original."},
+start:["Paste in a long article or protocol you know well and ask for a one-page summary.","Ask it to list any assumptions it made.","Check the summary against the original and note what it missed."]},
+gpt:{name:"ChatGPT",links:[["ChatGPT",H+"chatgpt.com/"]],
+what:"OpenAI's general AI assistant, useful for first drafts, rewording, outlines, and brainstorming.",
+learn:{it:"A general-purpose chat assistant from OpenAI.",how:"You describe what you want in plain language, and it writes a response. You can ask follow-up questions and have it revise.",str:"Flexible. Good at first drafts, rewording, summaries, outlines, and brainstorming.",lim:GEN_LIM,priv:"OpenAI offers specific healthcare and enterprise plans with a BAA. Its free and personal plans are not covered.",exp:"Give it a letter you already wrote, with names removed, and ask for a tighter version. Compare it with yours."},
+start:["Pick one writing task you would normally do this week, such as a letter or talk outline, with names removed.","Give clear, step-by-step instructions and ask it to list any assumptions it made.","Compare its draft to your usual work and note what you had to fix."]},
+gemini:{name:"Google Gemini",links:[["Google Gemini",H+"gemini.google.com/"]],
+what:"Google's general AI assistant, a natural fit if you already work in Gmail and Google Docs.",
+learn:{it:"Google's general-purpose AI assistant.",how:"You ask in plain language and it writes a response.",str:"Convenient if your email and documents are already in Google.",lim:GEN_LIM,priv:"Ask your IT team whether your organization's version is approved for work data.",exp:"Ask it to draft a reply to a routine email and compare it with what you would have sent."},
+start:["Ask it to draft a reply to a routine email.","Compare it with what you would have sent.","Note what you had to change."]},
+scribeMd:{name:"Ambient scribes: Abridge, Microsoft Dragon Copilot, or Freed",short:"Ambient scribes",links:[["Abridge",H+"www.abridge.com/"],["Microsoft Dragon Copilot",H+"www.microsoft.com/en-us/health-solutions/clinical-workflow/dragon-copilot"],["Freed",H+"www.getfreed.ai/"]],
+what:"Ambient scribes listen to the visit and draft the note, which you review and edit before signing. Abridge and Microsoft Dragon Copilot (formerly DAX Copilot) are mostly used by health systems. Freed says it is built for independent clinics.",
+learn:{it:"Software that turns the conversation in the exam room into a draft clinical note.",how:"With the patient's consent, you record the visit. The software drafts the note, and you review, edit, and sign it.",str:"Takes on the typing so you can face the patient. You keep final say over every note.",lim:"Drafts can miss or misstate details, so review is required. Large systems usually choose one scribe centrally.",priv:"Use only a scribe your organization has approved and contracted.",exp:"Use it for three visits, write your own note for the same three, and compare them for accuracy and omissions."},
+start:["Ask your practice manager or IT team whether a scribe is already approved where you work.","If one is, use it for three visits and write your own note for the same three.","Compare them for accuracy and anything left out."]},
+vetsoap:{name:"VetSOAP",links:[["VetSOAP",H+"vetsoap.ai/"]],
+what:"An ambient scribe for veterinarians. VetSOAP says it turns a recording of the appointment into a structured SOAP note that you review and edit before finalizing.",disclose:"Disclosure: the colleague who shared this guide, Dr. Aaron Smiley, is a founder of VetSOAP.",
+learn:{it:"A veterinary scribe that turns an appointment recording into a SOAP note.",how:"You record the appointment. It drafts Subjective, Objective, Assessment, and Plan, and you review and edit before finalizing.",str:"VetSOAP says it is built for real clinic conditions such as background noise, flags unclear details rather than guessing, and keeps every note editable.",lim:"Like any scribe, it can miss or misstate details, so review is required.",priv:"Ask how recordings and notes are stored, and check that it fits your practice's policies.",exp:"Record three routine appointments, write your own notes for the same three, and compare them."},
+start:["With the client's consent, record three routine appointments.","Write your own notes for the same three visits.","Compare them for accuracy and anything missing."]},
+clipchamp:{name:"Microsoft Clipchamp",video:true,links:[["Clipchamp",H+"clipchamp.com/"]],
+what:"Microsoft's video editor. It runs in a web browser, so it works on a Mac, and as a Windows app, with AI tools for captions and cleaner audio. Check whether your organization's Microsoft 365 includes it.",
+learn:{it:"A video editor from Microsoft that runs in a browser or as a Windows app.",how:"You drag clips onto a timeline, trim them, and add text, music, and transitions. Microsoft lists AI tools that generate subtitles and remove background noise, pauses, and filler words.",str:"Approachable for beginners, and Microsoft says premium features are available with a Microsoft 365 subscription.",lim:"Less control than a professional editor for complex projects.",priv:"If your organization provides it, use the work version for work footage.",exp:"Take a 10-minute clip and make a 60-second highlight with captions."},
+start:["Check whether Clipchamp appears in your work Microsoft 365 apps.","Take a 10-minute clip and cut a 60-second highlight.","Add auto-generated captions, then proofread them."]},
+imovie:{name:"Apple iMovie",video:true,links:[["iMovie",H+"apps.apple.com/us/app/imovie/id408981434"]],
+what:"Apple's free video editor for Mac, iPhone, and iPad. Simpler than professional tools, with templates for titles and trailers.",
+learn:{it:"A free, beginner-friendly video editor from Apple.",how:"You import clips, arrange them on a timeline, trim, and add titles, music, and transitions.",str:"Free on the Mac App Store. Apple lists one-click Enhance, video stabilization, and editing at up to 4K on compatible Macs.",lim:"Fewer caption and branding options than dedicated tools.",priv:"Follow your practice's policy before editing footage that shows clients.",exp:"Take a 10-minute clip and make a 60-second highlight with a title card."},
+start:["Open iMovie (or install it free from the Mac App Store).","Take a 10-minute clip and cut a 60-second highlight.","Add a title card and export it for sharing."]},
+descript:{name:"Descript",video:true,links:[["Descript",H+"www.descript.com/"]],
+what:"A video and audio editor where you edit by editing the transcript, like editing a document.",
+learn:{it:"A text-based video and audio editor.",how:"It transcribes your footage. Deleting words in the transcript cuts them from the video. Descript lists tools to remove filler words, improve sound, add captions, and create clips.",str:"Fast for talking-head videos, talks, and interviews.",lim:"Less suited to footage without speech. It takes some time to learn.",priv:"Footage is processed by its service. Check its terms before uploading work footage.",exp:"Take a 10-minute talk, remove filler words, and cut a 60-second highlight from the transcript."},
+start:["Import a 10-minute recording of someone speaking.","Remove filler words, then cut a 60-second highlight by deleting text.","Add captions and watch it through once at full length."]},
+opus:{name:"OpusClip",video:true,links:[["OpusClip",H+"www.opus.pro/"]],
+what:"An AI tool that turns long videos into short clips, with captions and resizing for different platforms.",
+learn:{it:"A tool built to turn one long video into several short clips.",how:"You upload a video or paste a link. It suggests short clips, and OpusClip lists animated captions, reframing for different screen sizes, and export to Adobe Premiere Pro or DaVinci Resolve.",str:"Quick way to get highlight candidates from long footage.",lim:"Its picks are suggestions; you still need to judge accuracy and context.",priv:"Footage is uploaded to its service. Check its terms before uploading work footage.",exp:"Upload a 10-minute clip and compare its suggested highlights with the 60 seconds you would have chosen."},
+start:["Upload a 10-minute clip you know well.","Review its suggested short clips.","Compare them with the 60 seconds you would have chosen yourself."]},
+capcut:{name:"CapCut",video:true,links:[["CapCut",H+"www.capcut.com/"]],
+what:"A video editor available online, on desktop, and on mobile, with AI tools such as auto captions and noise reduction.",
+learn:{it:"A popular editor for short social videos.",how:"You arrange clips on a timeline and add captions, effects, and templates.",str:"Many templates and quick caption tools for short videos.",lim:"Geared toward social media styles; check that the look fits professional use.",priv:"CapCut's privacy policy says it may collect content you upload, including videos. Check its terms before uploading work footage.",exp:"Take a 10-minute clip and make a 60-second highlight with auto captions."},
+start:["Take a 10-minute clip that does not show clients.","Cut a 60-second highlight and add auto captions.","Proofread the captions and check the result looks professional."]},
+premiere:{name:"Adobe Premiere Pro",video:true,links:[["Premiere Pro",H+"www.adobe.com/products/premiere.html"]],
+what:"A professional video editor. Its Text-Based Editing feature transcribes footage so you can cut video by editing the transcript.",
+learn:{it:"Adobe's professional video editing software.",how:"Full timeline editing, plus Text-Based Editing: Adobe says it auto-transcribes dialogue, lets you cut and rearrange video by editing text, and can detect and delete filler words.",str:"The most control over the final look, and it scales to complex projects.",lim:"Steeper learning curve than the other options here.",priv:"Check your organization's policy before storing work footage in any cloud service.",exp:"Transcribe a 10-minute clip and build a 60-second highlight from the transcript."},
+start:["Open a 10-minute clip in the Text-Based Editing workspace and transcribe it.","Build a 60-second highlight by selecting text.","Refine the cuts on the timeline and add captions."]}
+};
+var ORDER=Object.keys(T);
+var VIDEO=ORDER.filter(function(k){return T[k].video});
+var A={copilot:"yes"},cur=0,app=document.getElementById("app");
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function list(arr){if(arr.length<2)return arr.join("");if(arr.length===2)return arr[0]+" and "+arr[1];return arr.slice(0,-1).join(", ")+", and "+arr[arr.length-1]}
+function answered(q){var v=A[q.id];return q.multi?(v&&v.length>0):!!v}
+function isVet(a){return a.role==="vet"}
+function show(id,on){var e=document.getElementById(id);if(e&&e.style)e.style.display=on?"":"none"}
+function renderQ(){
+app.className="";show("intro",true);var qc=document.getElementById("qcount");if(qc)qc.textContent=["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten"][Q.length]||Q.length;
+var q=Q[cur],pct=Math.round(cur/Q.length*100);
+var h='<div class="progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="'+Q.length+'" aria-valuenow="'+cur+'"><div class="bar" style="width:'+pct+'%"></div></div>';
+h+='<div class="step">Question '+(cur+1)+' of '+Q.length+'</div><fieldset><legend><h2 id="qt" tabindex="-1">'+esc(q.title)+'</h2></legend>';
+h+=q.hint?'<p class="hint">'+esc(q.hint)+'</p>':'<div style="height:10px"></div>';
+q.opts.forEach(function(o){var t=q.multi?"checkbox":"radio";var on=q.multi?((A[q.id]||[]).indexOf(o[0])>=0):A[q.id]===o[0];
+h+='<label class="opt"><input type="'+t+'" name="q" value="'+o[0]+'"'+(on?" checked":"")+'><span>'+esc(o[1])+'</span></label>';});
+h+='</fieldset><div class="nav"><button class="secondary" id="back"'+(cur===0?' disabled style="visibility:hidden"':'')+'>Back</button><button class="primary" id="next"'+(answered(q)?"":" disabled")+'>'+(cur===Q.length-1?"See my results":"Next")+'</button></div>';
+if(cur===0)h+=primer();
+app.innerHTML=h;
+app.querySelectorAll("input").forEach(function(inp){inp.addEventListener("change",function(){
+if(q.multi){var v=A[q.id]||[];if(inp.checked){if(v.indexOf(inp.value)<0)v.push(inp.value)}else v=v.filter(function(x){return x!==inp.value});A[q.id]=v}else A[q.id]=inp.value;
+document.getElementById("next").disabled=!answered(q);});});
+document.getElementById("back").onclick=function(){if(cur>0){cur--;renderQ()}};
+document.getElementById("next").onclick=function(){if(!answered(q))return;if(cur<Q.length-1){cur++;renderQ()}else renderResults()};
+if(cur>0)document.getElementById("qt").focus();
+}
+function primer(){return '<details><summary>Primer: how these AI tools work, why they make things up, and how to check them</summary>'+
+'<p><strong>How they work.</strong> Chat assistants are trained on large amounts of text and generate answers by predicting likely wording. Unless a tool searches sources while answering, it is writing from patterns, not looking facts up.</p>'+
+'<p><strong>Why they make things up.</strong> Because they aim for fluent, plausible text, they can produce statements, numbers, or references that sound right but are wrong. This is often called hallucination, and it can include citations to papers that do not exist.</p>'+
+'<p><strong>How to check them.</strong> Prefer tools that cite sources, and open the sources. Test a tool first on questions you already know. Verify doses and other critical facts against a trusted reference. Ask it to list its assumptions. Keep a human review step for anything that goes into a record or to a client or patient.</p></details>'}
+function videoTips(){return '<details><summary>Tips for professional-looking video</summary>'+
+'<p><strong>Audio first.</strong> Viewers forgive soft video sooner than poor sound. Use a clip-on or nearby microphone and a quiet room.</p>'+
+'<p><strong>Light the face.</strong> Face a window or soft light; avoid bright windows behind you.</p>'+
+'<p><strong>Caption everything.</strong> Many people watch with the sound off. Proofread auto captions, especially drug and medical terms.</p>'+
+'<p><strong>Keep branding consistent.</strong> Use the same fonts, colors, logo placement, and intro or outro on every video.</p>'+
+'<p><strong>Hook early.</strong> Put the key point or question in the first few seconds, and keep highlights short.</p></details>'}
+function pts(a){
+var P={},R={};ORDER.forEach(function(k){P[k]=0;R[k]=[]});
+function add(k,n,r){P[k]+=n;if(r&&R[k].indexOf(r)<0)R[k].push(r)}
+var d=a.drain||[],vet=isVet(a),scribe=vet?"vetsoap":"scribeMd";
+if(d.indexOf("notes")>=0)add(scribe,vet?10:6,"You said notes and medical records drain you, and this drafts the note from the visit so you only review and edit.");
+if(d.indexOf("research")>=0)add("oe",5,"You said research and clinical questions drain you, and this gives answers with citations you can check.");
+if(d.indexOf("writing")>=0){add("claude",4,"You said writing talks, letters, and emails drains you, and this is strong at careful first drafts.");add("gpt",4,"You said writing talks, letters, and emails drains you, and this is strong at quick first drafts.");}
+if(d.indexOf("paper")>=0){add("gpt",3,"You said paperwork drains you, and this can draft forms, letters, and summaries for you to check.");add("claude",3,"You said paperwork drains you, and this can draft forms, letters, and summaries for you to check.");}
+if(d.indexOf("inbox")>=0){add("copilot",2,"You said your inbox drains you, and in Outlook it can summarize long threads and draft replies.");add("gemini",2,"You said your inbox drains you, and it fits if your email is in Gmail.");}
+if(d.indexOf("admin")>=0){add("copilot",2,"You said scheduling and admin drain you, and it works inside Outlook and Teams.");add("gpt",1,"");}
+if(a.setting!=="private")add("copilot",1,"");
+if(a.cite==="high")add("oe",4,"You said sources are essential, and it is designed to cite them.");
+else if(a.cite==="med")add("oe",2,"You said sources are helpful, and it is designed to cite them.");
+if(a.style==="partner"){add("claude",2,"You want a thinking partner, and it lets you question, push back, and ask for its reasoning.");add("gpt",2,"You want a thinking partner, and it lets you question, push back, and ask for its reasoning.");}
+if(a.style==="doer")add(scribe,3,"You want something that does the work, and this writes the draft note for you.");
+if(a.style==="both"){add(scribe,2,"You want help that does some of the work, and this writes the draft note for you.");add("claude",2,"You also want a thinking partner you can question.");add("gpt",2,"You also want a thinking partner you can question.");}
+if(a.tech==="low")add("oe",1,"");
+if(a.copilot==="yes")add("copilot",10,"Your employer provides it, so it is likely the approved place for work tasks.");
+else if(a.copilot==="unsure")add("copilot",1,"It is worth asking your IT team whether your organization already provides it.");
+if(vet){P.scribeMd=-99;P.oe-=2}else P.vetsoap=-99;
+VIDEO.forEach(function(k){P[k]=-99});
+return {P:P,R:R};
+}
+function videoRank(a){
+var t=a.tech,c=a.computer,m=a.copilot==="yes",L=[],why={};
+function put(k,r){if(L.indexOf(k)<0){L.push(k);why[k]=[]}why[k].push(r)}
+var base="You want to edit videos into polished clips and short highlights.";
+if(t==="low"){
+ if(c==="mac")put("imovie","You use a Mac and want little setup, and iMovie is free and simple.");
+ if(m||c!=="mac")put("clipchamp",m?(c==="mac"?"Clipchamp is included with some Microsoft 365 plans and runs in a web browser on a Mac, so check whether your work account has it. iMovie is the free Mac alternative.":"Your employer provides Microsoft 365 Copilot, and Clipchamp is included with some Microsoft 365 plans, so check whether your work apps have it."):"You want little setup, and Clipchamp is approachable for beginners.");
+ put("opus","You want short highlights from longer footage with little effort, which is what OpusClip is built for.");
+ put("imovie","It is free and simple, if you use a Mac.");
+}else if(t==="some"){
+ put("descript","You can spend a few hours learning, and editing by transcript makes cutting talks into highlights fast.");
+ put("opus","You want short highlights, and it suggests clips from long footage for you to review.");
+ put(m?"clipchamp":(c==="mac"?"imovie":"capcut"),m?"Clipchamp is included with some Microsoft 365 plans"+(c==="mac"?" and runs in a web browser on a Mac":"")+", so check whether your work apps have it."+(c==="mac"?" iMovie is the free Mac alternative.":""):c==="mac"?"It is free on Mac and good for simple, clean edits.":"It has quick caption tools and templates for short videos.");
+}else{
+ put("premiere","You are willing to invest time, and Premiere Pro gives the most control over a professional result.");
+ put("descript","Editing by transcript is a fast way to rough-cut talks before polishing.");
+ put("opus","It suggests short highlight clips from long footage for you to review.");
+}
+L=L.slice(0,3);L.forEach(function(k){why[k].unshift(base)});
+return {list:L,why:why};
+}
+var REL={notes:["vetsoap","scribeMd"],research:["oe"],writing:["claude","gpt"],paper:["gpt","claude"],inbox:["copilot","gemini"],admin:["copilot","gpt"]};
+function rel(k,a){var d=a.drain||[];for(var i=0;i<d.length;i++)if((REL[d[i]]||[]).indexOf(k)>=0)return i;return 99}
+function score(a){
+var x=pts(a),P=x.P,R=x.R;
+var ranked=ORDER.filter(function(k){return P[k]>0}).sort(function(p,q){return P[q]-P[p]||rel(p,a)-rel(q,a)||ORDER.indexOf(p)-ORDER.indexOf(q)});
+if(ranked.indexOf("gpt")>=0&&ranked.indexOf("claude")>=0){var keep=(a.style==="partner"||(a.drain||[]).indexOf("writing")>=0)?"claude":"gpt",drop=keep==="claude"?"gpt":"claude";var pos=Math.min(ranked.indexOf("gpt"),ranked.indexOf("claude"));ranked=ranked.filter(function(k){return k!==drop&&k!==keep});ranked.splice(pos,0,keep);}
+["claude","copilot","gemini"].forEach(function(k){if(ranked.length<3&&ranked.indexOf(k)<0){ranked.push(k);R[k].push(k==="claude"?"A general assistant is a low-risk place to start for everyday writing and questions.":"A second general option so you can compare tools side by side.")}});
+if(a.copilot==="yes")ranked=["copilot"].concat(ranked.filter(function(k){return k!=="copilot"}));
+var vid=null,vr=null;
+if((a.drain||[]).indexOf("video")>=0){vr=videoRank(a);vid=vr.list[0];ranked.splice(a.copilot==="yes"?1:0,0,vid);vr.list.forEach(function(k){R[k]=vr.why[k]})}
+var top=ranked.slice(0,3);
+var sc=isVet(a)?"vetsoap":"scribeMd";
+if((a.drain||[]).indexOf("notes")>=0&&top.indexOf(sc)<0)top[2]=sc;
+var more=vr?vr.list.filter(function(k){return top.indexOf(k)<0}):[];
+top.concat(more).forEach(function(k){if(!R[k].length)R[k].push("It fits the everyday work you described.")});
+top.concat(more).forEach(function(k){if(k==="copilot")return;if(["gpt","claude","gemini"].indexOf(k)>=0){if(a.copilot==="yes")R[k].push("Use it alongside Copilot for learning, deep dives, or personal projects.")}else R[k].push("If your organization approves it for work use, use it for practice work.")});
+var notes=[],d=a.drain||[];
+if(d.indexOf("research")>=0&&(isVet(a)||top.indexOf("oe")<0)){var g=top.filter(function(k){return["claude","gpt","copilot"].indexOf(k)>=0});g.forEach(function(k){R[k].push("For research, ask it to cite sources and verify them.")});
+notes.push(isVet(a)?"For research: OpenEvidence focuses on human medicine; for veterinary questions, try Copilot or Claude and ask for sources you can check.":"For research: try OpenEvidence, which is designed to cite its sources, or ask a general assistant for sources you can check.");}
+var COV={notes:["vetsoap","scribeMd"],inbox:["copilot","gemini"],paper:["gpt","claude","copilot"],admin:["copilot","gpt"],writing:["claude","gpt","copilot","gemini"]};
+Object.keys(COV).forEach(function(x){if(d.indexOf(x)>=0&&!top.some(function(k){return COV[x].indexOf(k)>=0}))notes.push("For "+DL[x]+": try Copilot, if your organization provides it, or Claude, and check what it produces.")});
+return {top:top,more:more,s:P,why:R,notes:notes};
+}
+function cautionFor(k,a){
+var c=[],vet=isVet(a);
+if(k==="oe")c.push(vet?"Its content is focused on human medicine, and access is aimed at verified U.S. healthcare professionals. Check whether veterinarians can sign up, and check cited sources closely for veterinary questions.":"Open the cited sources for anything high-stakes rather than relying on the summary alone.");
+if(["gpt","claude","gemini"].indexOf(k)>=0)c.push(vet?"Keep practice and client data out of personal accounts; see the note on client information below.":"Don't paste identifiable patient information unless the tool and plan are covered by a business associate agreement (BAA) that your employer has approved. Consumer versions are generally not covered.");
+if(["gpt","claude","gemini","copilot"].indexOf(k)>=0)c.push("AI assistants can state wrong things confidently. Check facts and sources before relying on them.");
+if(k==="copilot")c.push("Confirm with your IT team which data it is approved for.");
+if(k==="scribeMd"||k==="vetsoap")c.push("Get the "+(vet?"client's":"patient's")+" consent before recording, and always review and edit the draft note before signing it.");
+if(k==="scribeMd"&&a.setting!=="private")c.push("Use only the scribe your organization has approved.");
+if(T[k].video)c.push("Get consent from anyone recorded, and don't upload footage showing clients or identifiable client information to personal accounts without their consent and company approval.");
+if(k==="capcut")c.push("CapCut's privacy policy says it may collect content you upload. Check its terms before using it for work footage.");
+return c;
+}
+function linksHTML(k){return T[k].links.map(function(l){return'<a href="'+l[1]+'" target="_blank" rel="noopener">'+esc(l[0])+' website</a>'}).join(", ")}
+function nm(k){return T[k].short||T[k].name}
+function learnHTML(k,a){var l=T[k].learn,priv=l.priv;
+if(isVet(a)&&/BAA|HIPAA/.test(priv))priv="Keep practice and client data out of personal accounts; see the note on client information.";
+return '<details class="learn"><summary>Learn more about '+esc(nm(k))+'</summary>'+
+[["What it is",l.it],["How it works",l.how],["Strengths",l.str],["Limits",l.lim],["Privacy",priv],["A good first experiment",l.exp]].map(function(r){return'<p><strong>'+r[0]+'.</strong> '+esc(r[1])+'</p>'}).join("")+'<p>'+linksHTML(k)+'</p></details>'}
+function privacyNote(a){
+if(isVet(a))return '<div class="note"><strong>About client information.</strong> HIPAA applies to human patient records; for veterinary practices, state rules and client confidentiality still apply. Keep client names, contact details, and footage of clients out of personal accounts, get consent before recording, and follow your practice or company policy.</div>';
+if(a.phi==="no")return '<div class="note"><strong>About patient information.</strong> If patient details ever come into it, use only tools your employer has approved.</div>';
+return '<div class="note"><strong>About patient information.</strong> '+(a.phi==="unsure"?"If there is any chance you will use patient details, plan as if you will. ":"")+'Any tool that handles identifiable patient information needs a business associate agreement (BAA) under HIPAA. Start by asking which AI tools your employer has already approved.</div>';}
+function card(k,i,a,r){var t=T[k],h='<section class="pick">'+(i?'<span class="rank">#'+i+'</span>':'')+'<h3>'+esc(t.name)+'</h3><p>'+esc(t.what)+'</p>'+(t.disclose?'<p class="hint">'+esc(t.disclose)+'</p>':'')+'<p>'+linksHTML(k)+'</p>';
+h+='<h4>Why this fits you</h4><ul>'+r.why[k].slice(0,3).map(function(w){return"<li>"+esc(w)+"</li>"}).join("")+'</ul>';
+h+='<h4>How to start this week</h4><div class="task">'+t.start.map(function(s){return'<label><input type="checkbox"> <span>'+esc(s)+'</span></label>'}).join("")+'</div>';
+h+='<div class="caution"><strong>Cautions.</strong><ul>'+cautionFor(k,a).map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul></div>';
+return h+learnHTML(k,a)+'</section>'}
+function renderResults(){
+app.className="res";show("intro",false);
+var r=score(A),a=A,vet=isVet(a);
+var h='<h2 id="qt" tabindex="-1">Your top picks</h2><p class="hint">Ranked by how well each fits your answers.</p>';
+if(a.copilot==="yes")h+='<div class="note"><strong>Your home base.</strong> If your organization approves Microsoft Copilot for work data, use it for work tasks and anything involving practice data. The other picks are complements for learning, deep dives, and personal projects.</div>';
+r.top.forEach(function(k,i){h+=card(k,i+1,a,r)});
+if(r.more.length){h+='<h2>More video editing options</h2>';r.more.forEach(function(k){h+=card(k,0,a,r)});}
+if((a.drain||[]).indexOf("video")>=0)h+=videoTips();
+r.notes.forEach(function(n){h+='<div class="note drainnote">'+esc(n)+'</div>'});h+=privacyNote(a);
+var d=(a.drain||[]).map(function(x){return DL[x]});
+h+='<details><summary>Show my reasoning</summary><p>You said your biggest '+(d.length>1?"drains are ":"drain is ")+esc(list(d))+'. '+(a.copilot==="yes"?"Because your employer provides Microsoft Copilot, it is listed first as your home base for work. ":"")+'</p><ol>';
+r.top.concat(r.more).forEach(function(k){h+='<li><strong>'+esc(nm(k))+'.</strong> '+esc(r.why[k].join(" "))+'</li>'});
+h+='</ol>'+r.notes.map(function(n){return'<p>'+esc(n)+'</p>'}).join('')+'</details>';
+var all=ORDER.filter(function(k){return vet?k!=="scribeMd":k!=="vetsoap"});
+h+='<details><summary>All options at a glance</summary><ul>'+all.map(function(k){return'<li><strong>'+esc(T[k].name)+'.</strong> '+esc(T[k].what)+(T[k].disclose?' '+esc(T[k].disclose):'')+' '+linksHTML(k)+'.'+learnHTML(k,a)+'</li>'}).join("")+'</ul></details>';
+h+=primer();
+h+='<div class="nav noprint"><button class="secondary" id="restart">Start over</button><span class="grp"><button class="secondary" id="copy">Copy results</button><button class="primary" id="print">Print</button></span></div><p id="copied" class="hint" role="status"></p>';
+app.innerHTML=h;
+document.getElementById("restart").onclick=function(){A={copilot:"yes"};cur=0;renderQ();window.scrollTo(0,0)};
+document.getElementById("print").onclick=function(){window.print()};
+document.getElementById("copy").onclick=function(){var txt=app.innerText.replace(/Start over\s*Copy results\s*Print\s*$/m,"");var done=function(){document.getElementById("copied").textContent="Results copied."};
+function fallback(){var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done()}catch(e){document.getElementById("copied").textContent="Copy failed. Select the text and copy it manually."}ta.remove()}
+if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(done,fallback)}else fallback();};
+document.getElementById("qt").focus();
+}
+if(typeof module!=="undefined"){module.exports={Q:Q,T:T,VIDEO:VIDEO,score:score,render:function(a){A=a;renderResults();return app.innerHTML}}}
+renderQ();
+</script>
+</body>
+</html>
